@@ -1,6 +1,6 @@
 # ✨ Depth-To-Particle Unity Renderer Feature
 
-A custom rendering feature based on URP in Unity that converts depth maps into particle effects.
+A custom rendering feature based on URP in Unity that converts a **custom-rendered depth map** into particle effects.
 
 ---
 
