@@ -26,11 +26,11 @@
 
 2. **ScriptableRendererFeature 获取渲染目标**
    - 在 URP 中添加自定义 Renderer Feature。
-   - 指定 Shader 的 Pass 名称和渲染的 Layer，通过 Blit 将渲染结果写入 RTHandle。
+   - 指定 Shader 的 Pass 名称和渲染的 Layer，将渲染结果写入 RTHandle。
 
 3. **Compute Shader 处理像素数据**
    - 在 Compute Shader 中对渲染纹理进行采样。
-   - 通过筛选像素计算出世界空间坐标。
+   - 筛选像素并计算出世界空间坐标。
    - 将有效坐标输出至 Buffer 中。
 
 4. **粒子生成**
