@@ -41,7 +41,7 @@
 
 ## 🧪 效果展示
 
-![粒子生成效果演示](./Asset/Temp/Show.gif)
+![粒子生成效果演示](./Assets/Temp/Show.gif)
 
 ---
 
