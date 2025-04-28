@@ -41,16 +41,6 @@
 
 ## 🧪 效果展示
 
-![粒子生成效果演示](./Assets/Temp/Show.gif)
+![粒子生成效果演示](Assets/Temp/Show.gif)
 
----
 
-## 📁 文件结构
-
-```plaintext
-Assets/
-├── Scenes/                  // 示例场景
-├── Shaders/                 // Shader & Compute Shader 文件
-├── Scripts/                 // C# 脚本，含 Renderer Feature 和粒子生成逻辑
-├── Materials/               // 材质球
-├── Textures/                // 测试贴图
