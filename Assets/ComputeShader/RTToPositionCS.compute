@@ -1,0 +1,51 @@
+#pragma kernel CSMain
+
+Texture2D<float> rt;
+
+AppendStructuredBuffer<float3> positionsBuffer;
+
+float4x4 inverseProjection;
+float4x4 inverseView;
+float3 cameraPosition;
+float nearClip;
+float farClip;
+uint2 texSize;
+
+float3 GetRayFromScreenPoint(float2 uv)
+{
+    float2 ndc = uv * 2.0f - 1.0f;
+
+    //近平面上点在裁剪空间和NDC空间中转化时x，y不变，z为0
+    float4 clipPos = float4(ndc.x, ndc.y, 0.0f, 1.0f);
+
+    float4 eyePos = mul(inverseProjection, clipPos);
+    eyePos /= eyePos.w;
+
+    float4 worldPos = mul(inverseView, eyePos);
+    float3 rayDir = normalize(worldPos.xyz - cameraPosition.xyz);
+
+    return rayDir;
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= texSize.x || id.y >= texSize.y) return;
+
+    if (id.x % 10 != 0 || id.y % 10 != 0) return;
+
+    uint x = id.x;
+    uint y = id.y;
+
+    float2 uv = float2(x, y) / texSize;
+
+    float distance = rt.Load(int3(x, y, 0)) * 5000;
+
+    if (distance == 0) return;
+
+    float3 rayDir = GetRayFromScreenPoint(uv);
+
+    float3 finalPos = rayDir * distance + cameraPosition;
+
+    positionsBuffer.Append(finalPos);
+}

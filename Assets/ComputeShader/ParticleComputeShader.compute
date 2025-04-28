@@ -1,0 +1,62 @@
+#include "Assets/Shader//Noise.hlsl"
+#pragma kernel CSMain
+
+// 粒子的结构体
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+};
+
+RWStructuredBuffer<Particle> particles; // 粒子数据
+int particleCount;
+float stage;
+
+bool enableWind;
+float3 windDirection;
+float windStrength;  
+
+
+float3 RandomUnitVector(uint seed, float3 position)
+{
+    float x = random(seed * 13 + position.x) * 2.0 - 1.0;
+    float y = random(seed * 17 + position.y) * 2.0 - 1.0;
+    float z = random(seed * 19 + position.z) * 2.0 - 1.0;
+    return normalize(float3(x, y, z));
+}
+
+[numthreads(256, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (int(index) >= particleCount)
+        return;
+
+    Particle p = particles[index];
+
+    // 获取当前速度的单位方向
+    float3 baseDir = normalize(p.velocity);
+
+    // 加入随机扰动
+    float3 randomDir = RandomUnitVector(index, p.position);
+    float randomSeed = random(int(index) + p.position.x + p.position.y + p.position.z);
+    float factor = randomSeed * 0.1f;
+    float3 newDir = normalize(lerp(baseDir, randomDir, factor));
+
+    // 重新赋值速度，保持原有速度大小
+    float speed = length(p.velocity);
+    p.velocity = newDir * speed;
+
+    if (enableWind)
+    {
+        //  加入风力影响
+        p.velocity += windDirection * windStrength*0.0001;
+    }
+   
+    
+    // 更新位置
+    p.position += p.velocity;
+
+    particles[index] = p;
+}
+
