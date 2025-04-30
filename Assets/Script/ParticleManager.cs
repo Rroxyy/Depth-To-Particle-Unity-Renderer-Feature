@@ -2,16 +2,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
+
 
 public class ParticleManager : MonoBehaviour
 {
-    [Header("Base Settings")] 
-    public GameObject particlePrefab;
-    
+    [Header("Base Settings")] public GameObject particlePrefab;
+
     private List<ParticlesControl> particles;
 
 
     public static ParticleManager instance;
+
+    [Header("Test Particle Control")] [SerializeField]
+    private bool testEnable = false;
+
+    [SerializeField] int count = 100;
+
+    [SerializeField] private float round = 0.5f;
+    [Space(10)] [SerializeField] private float interval = 1f;
+    [SerializeField] private float timer;
 
     private void Awake()
     {
@@ -27,6 +37,27 @@ public class ParticleManager : MonoBehaviour
     {
         particles = new List<ParticlesControl>();
     }
+
+    private void Update()
+    {
+        timer += Time.deltaTime;
+        if (testEnable && timer > interval)
+        {
+            timer = 0;
+            Vector3[] positions = new Vector3[Mathf.Max(0, count)];
+            for (int i = 0; i < count; i++)
+            {
+                positions[i] = new Vector3(
+                                   Random.Range(-round, round),
+                                   Random.Range(-round, round),
+                                   Random.Range(-round, round))
+                               + transform.position;
+            }
+
+            AddParticle(positions);
+        }
+    }
+
 
     private void OnDestroy()
     {
@@ -52,15 +83,15 @@ public class ParticleManager : MonoBehaviour
 
     public void AddParticle(Vector3[] positions)
     {
-        GameObject particleGameObject = Instantiate(particlePrefab,transform);
-        ParticlesControl pc=particleGameObject.GetComponent<ParticlesControl>();
-        
-        pc.SetupParticle(positions,this);
+        if (positions == null || positions.Length <= 0)
+            return;
+        GameObject particleGameObject = Instantiate(particlePrefab, transform);
+        ParticlesControl pc = particleGameObject.GetComponent<ParticlesControl>();
+
+        pc.SetupParticle(positions, this);
         particles.Add(pc);
     }
-    
-    
-    
+
 
     public void DestoryParticle(ParticlesControl particle)
     {

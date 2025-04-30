@@ -1,4 +1,4 @@
-Shader "Roxy/ParticleShader"
+Shader "Roxy/ParticleShader2"
 {
     Properties
     {
@@ -25,6 +25,7 @@ Shader "Roxy/ParticleShader"
             ZTest LEqual
 
             HLSLPROGRAM
+
             #pragma multi_compile_instancing
             #pragma vertex vert
             #pragma fragment frag
@@ -50,9 +51,13 @@ Shader "Roxy/ParticleShader"
             float _RandomSizeRange;
 
 
+            // uniform uint _BaseVertexIndex;
+
+
             struct Attributes
             {
                 uint vertexID : SV_VertexID;
+                uint instanceId : SV_InstanceID;
             };
 
             struct Varyings
@@ -68,17 +73,18 @@ Shader "Roxy/ParticleShader"
 
             Varyings vert(Attributes input)
             {
+               
                 Varyings output;
 
-                uint particleIndex = input.vertexID / 3;
+                uint particleIndex = input.instanceId;
                 uint quadVertexIndex = input.vertexID % 3;
 
                 float3 worldPos = particles[particleIndex].position;
 
                 float2 triangleOffsets[3] = {
-                    float2(- 0.5, - 0.5), // 左下
+                    float2(-0.5, -0.5), // 左下
                     float2(0.0, 0.366025), // 顶点
-                    float2(0.5, - 0.5), // 右下
+                    float2(0.5, -0.5), // 右下
                 };
 
                 float size = _Size;

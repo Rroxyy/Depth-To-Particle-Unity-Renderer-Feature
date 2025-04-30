@@ -151,7 +151,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4be724b3ff5d4631bba070bbcb451444, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  particlePrefab: {fileID: 8638778488262655355, guid: f4f075aebc5e33944b2d163038b09b5a, type: 3}
+  particlePrefab: {fileID: 2075008367660343819, guid: d8dfdc3300d7d424d9a3fcbcbb347e87, type: 3}
+  testEnable: 0
+  count: 10
+  round: 0.5
+  interval: 1
+  timer: 0
 --- !u!4 &26662274
 Transform:
   m_ObjectHideFlags: 0
@@ -161,7 +166,7 @@ Transform:
   m_GameObject: {fileID: 26662272}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.5876734, y: -3.7140954, z: 25.582565}
+  m_LocalPosition: {x: 0, y: 1.91, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

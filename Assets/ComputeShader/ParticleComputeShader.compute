@@ -14,7 +14,7 @@ float stage;
 
 bool enableWind;
 float3 windDirection;
-float windStrength;  
+float windStrength;
 
 
 float3 RandomUnitVector(uint seed, float3 position)
@@ -28,6 +28,7 @@ float3 RandomUnitVector(uint seed, float3 position)
 [numthreads(256, 1, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
+    // return;
     uint index = id.x;
     if (int(index) >= particleCount)
         return;
@@ -50,10 +51,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     if (enableWind)
     {
         //  加入风力影响
-        p.velocity += windDirection * windStrength*0.0001;
+        p.velocity += windDirection * windStrength * 0.0001;
     }
-   
-    
     // 更新位置
     p.position += p.velocity;
 

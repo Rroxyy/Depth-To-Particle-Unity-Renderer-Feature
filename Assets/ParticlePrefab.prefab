@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8638778488262655355
+--- !u!1 &2075008367660343819
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,58 +8,58 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6826969523638726669}
-  - component: {fileID: 806503672648906601}
+  - component: {fileID: 6230754924105500794}
+  - component: {fileID: 3320146729924375535}
   m_Layer: 0
-  m_Name: ParticlePerfab
+  m_Name: ParticlePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6826969523638726669
+--- !u!4 &6230754924105500794
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8638778488262655355}
+  m_GameObject: {fileID: 2075008367660343819}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.951, z: 1.248}
+  m_LocalPosition: {x: -1.8192018, y: 0.66237956, z: 0.32466477}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &806503672648906601
+--- !u!114 &3320146729924375535
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8638778488262655355}
+  m_GameObject: {fileID: 2075008367660343819}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5457581a7f04c74b14ee0f49f1b3f16, type: 3}
+  m_Script: {fileID: 11500000, guid: 17ea18fba451bde419bcc7a45a060ad7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   enableParticles: 0
-  particleSize: 3
-  enableRandomSize: 1
+  particleSize: 5
+  enableRandomSize: 0
   randomSizeRange: 1
   particleSizeCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.0026626587
+      time: 0.0008790316
       value: 0.41916275
-      inSlope: 4.104301
-      outSlope: 4.104301
-      tangentMode: 34
+      inSlope: 0.1046174
+      outSlope: 0.1046174
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.33333334
+      outWeight: 0.5538428
     - serializedVersion: 3
       time: 0.14495045
       value: 1.0031546
@@ -87,9 +87,39 @@ MonoBehaviour:
   particleDirection: 1
   particleLifeTime: 0.5
   enableWind: 1
-  windStrength: 10
+  windStrength: 5
   windDirection: {x: 1, y: 0, z: 0}
-  positionCenter: {fileID: 6826969523638726669}
-  boundSize: 1000
+  gradientColor:
+    serializedVersion: 2
+    key0: {r: 1.1124779, g: 1.7983152, b: 1.8317524, a: 1}
+    key1: {r: 0.31391177, g: 0.5823576, b: 2.4347317, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  boundSize: 9156
   particleComputeShader: {fileID: 7200000, guid: 36c1b2c705a15cc429da51380c9eeecf, type: 3}
-  particleMaterial: {fileID: 2100000, guid: fcc01c3f5e1bd1f4c8189a006839f107, type: 2}
+  particleMaterial: {fileID: 2100000, guid: 0ba62a6e8a202844a9f202598885a701, type: 2}
+  mesh: {fileID: 4300000, guid: 5617c86edd8ede840a8f6d0f5b481ba3, type: 2}
