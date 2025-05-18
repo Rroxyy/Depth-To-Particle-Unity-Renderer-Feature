@@ -1,0 +1,200 @@
+#include "Assets/Shader/Noise.hlsl"
+#include "Assets/Shader/Particle.hlsl"
+#pragma kernel UpdateParticle
+#pragma kernel AddParticle
+#pragma kernel InitializeParticle
+
+RWStructuredBuffer<Particle> particles; // 粒子数据
+AppendStructuredBuffer<Particle> aliveBuffer;
+StructuredBuffer<ParticleStatic> particleStaticBuffer;
+StructuredBuffer<float> velocityCurve;
+int maxParticleCount;
+float deltaTime;
+
+
+StructuredBuffer<Particle> addParticles;
+int addParticleCount;
+
+RWByteAddressBuffer headIndexBuffer;
+
+float SizeCurveEvaluate(int velocityCurveLength, float t)
+{
+    float fIndex = t * (velocityCurveLength - 1); // 线性映射到数组索引
+    int indexA = (int)floor(fIndex); //向下取整
+    int indexB = min(indexA + 1, velocityCurveLength - 1); // +1，防止越界
+
+    float weight = fIndex - indexA;
+
+    float sampleA = velocityCurve[indexA];
+    float sampleB = velocityCurve[indexB];
+
+    return lerp(sampleA, sampleB, weight);
+}
+
+[numthreads(256, 1, 1)]
+void UpdateParticle(uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (int(index) >= maxParticleCount)
+        return;
+
+    Particle p = particles[index];
+
+    p.als.x += deltaTime;
+
+    if (p.als.x > p.als.y)
+    {
+        p.active = 0;
+        particles[index] = p;
+        return;
+    }
+
+    ParticleStatic particleStatic = particleStaticBuffer[0];
+
+    int velocityCurveLength = particleStatic.velocityCurveCount;
+    float t = p.als.x / p.als.y; // 确保 t ∈ [0, 1]
+    t = saturate(t); // 防止越界
+    float velocityCurveValue = particleStatic.useVelocityCurve == 1
+                                   ? SizeCurveEvaluate(velocityCurveLength, t)
+                                   : 1;
+
+
+    float3 dir = p.direction;
+    float velocity = p.velocity;
+
+    p.position += dir * velocity * velocityCurveValue * deltaTime;
+
+    if (particleStatic.useGravity == 1)
+    {
+        float3 dd = dir * velocity;
+        dd += particleStatic.gravity * deltaTime;
+        p.direction = normalize(dd);
+        p.velocity = length(dd);
+    }
+
+    particles[index] = p;
+
+    if (particleStatic.renderMode==(uint)1)//use append buffer
+    {
+        aliveBuffer.Append(p);
+    }
+}
+
+
+
+StructuredBuffer<float3> addParticlePositions;
+StructuredBuffer<InitializeParameters> initializeParameters;
+
+float3 GetDirection(int index, InitializeParameters param)
+{
+    float3 dir = param.dirction;
+    if (param.enableRandomDirection > 0)
+    {
+        float randomX = random(addParticlePositions[index].x + index, -param.randomDirectionRange.x, param.randomDirectionRange.x);
+        float randomY = random(addParticlePositions[index].y + index, -param.randomDirectionRange.y, param.randomDirectionRange.y);
+        float randomZ = random(addParticlePositions[index].z + index, -param.randomDirectionRange.z, param.randomDirectionRange.z);
+        dir += float3(randomX, randomY, randomZ);
+    }
+    return normalize(dir);
+}
+
+float GetSize(int index, InitializeParameters param)
+{
+    float size = param.size;
+    if (param.enableRandomSize > 0)
+    {
+        float r = random(index, -param.randomSizeRange, param.randomSizeRange);
+        size = max(0, size + r);
+    }
+    return size;
+}
+
+float GetVelocity(int index, InitializeParameters param)
+{
+    float v = param.velocity;
+    if (param.enableRandomVelocity > 0)
+    {
+        float r = random(index + 1.234, -param.randomVelocityRange, param.randomVelocityRange);
+        v += r;
+    }
+    return v;
+}
+
+float GetLifetime(int index, InitializeParameters param)
+{
+    float lifetime = param.lifeTime;
+    if (param.enableRandomLifeTime > 0)
+    {
+        float r = random(index + 2.345, -param.randomLifeTimeRange, param.randomLifeTimeRange);
+        lifetime = max(0, lifetime + r);
+    }
+    return lifetime;
+}
+
+Particle GetAddParticles(int index, InitializeParameters param)
+{
+    Particle p=(Particle)0;;
+    p.position = addParticlePositions[index];
+    p.direction = GetDirection(index, param);
+    p.velocity = GetVelocity(index, param);
+    p.als.y = GetLifetime(index, param); 
+    p.als.z = GetSize(index, param);    
+    p.active = 1;
+    return p;
+}
+
+
+[numthreads(256, 1, 1)]
+void AddParticle(uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (int(index) >= addParticleCount)
+        return;
+
+    InitializeParameters param=initializeParameters[0];
+    Particle p = GetAddParticles(index,param);
+
+    float lifeTime = p.als.y;
+    float size = p.als.z;
+    uint active = p.active;
+
+    if (lifeTime < 0.00001f || size < 0.00001f || active < 1)
+    {
+        return;
+    }
+
+    uint headIndex;
+    headIndexBuffer.InterlockedAdd(0, 1, headIndex);
+    headIndex = headIndex % maxParticleCount;
+
+    ParticleStatic ps = particleStaticBuffer[0];
+
+    if (ps.overwriteMode == 0 && particles[headIndex].active > 0.5) //NoOverwrite
+    {
+        return;
+    }
+
+    particles[headIndex] = p;
+}
+
+
+[numthreads(256, 1, 1)]
+void InitializeParticle(uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (int(index) >= maxParticleCount)
+        return;
+
+    Particle p;
+    p.active = 0;
+    p.als=float3(0,0,0);
+    p.position=float3(0,0,0);
+    p.direction=float3(0,0,0);
+    p.velocity=0;
+    particles[index] = p;
+    return;
+}
+
+
+
+

@@ -1,5 +1,7 @@
 #pragma kernel CSMain
 
+#include "Assets/Shader/Noise.hlsl"
+
 Texture2D<float> rt;
 
 AppendStructuredBuffer<float3> positionsBuffer;
@@ -32,12 +34,17 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= texSize.x || id.y >= texSize.y) return;
 
-    if (id.x % 10 != 0 || id.y % 10 != 0) return;
+    if (id.x % 20 != 0 || id.y % 20 != 0) return;
+
+    
 
     uint x = id.x;
     uint y = id.y;
 
     float2 uv = float2(x, y) / texSize;
+    
+    if (random(uv) > .5f)return;
+   
 
     float distance = rt.Load(int3(x, y, 0)) * 5000;
 

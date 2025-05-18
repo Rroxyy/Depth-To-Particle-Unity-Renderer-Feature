@@ -1,5 +1,6 @@
-#include "Assets/Shader//Noise.hlsl"
-#pragma kernel CSMain
+#include "Assets/Shader/Noise.hlsl"
+#pragma kernel DissolveParticleCompute
+#pragma kernel RegenerateParticleCompute
 
 // 粒子的结构体
 struct Particle
@@ -17,6 +18,9 @@ float3 windDirection;
 float windStrength;
 
 
+StructuredBuffer<float3> finalPositions;
+
+
 float3 RandomUnitVector(uint seed, float3 position)
 {
     float x = random(seed * 13 + position.x) * 2.0 - 1.0;
@@ -26,7 +30,7 @@ float3 RandomUnitVector(uint seed, float3 position)
 }
 
 [numthreads(256, 1, 1)]
-void CSMain(uint3 id : SV_DispatchThreadID)
+void DissolveParticleCompute(uint3 id : SV_DispatchThreadID)
 {
     // return;
     uint index = id.x;
@@ -53,9 +57,28 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         //  加入风力影响
         p.velocity += windDirection * windStrength * 0.0001;
     }
+
+
     // 更新位置
     p.position += p.velocity;
 
     particles[index] = p;
 }
 
+[numthreads(256, 1, 1)]
+void RegenerateParticleCompute(uint3 id : SV_DispatchThreadID)
+{
+    // return;
+    uint index = id.x;
+    if (int(index) >= particleCount)
+    {
+        return;
+    }
+
+    Particle p = particles[index];
+
+    p.position = lerp(p.position, finalPositions[index], stage);
+
+
+    particles[index] = p;
+}

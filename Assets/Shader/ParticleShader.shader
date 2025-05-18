@@ -11,9 +11,13 @@ Shader "Roxy/ParticleShader"
     {
         Tags
         {
-            "RenderType" = "Opaque"
-            "RenderPipeline" = "UniversalPipeline"
+            "Queue"="Transparent"
+            "RenderType"="Transparent"
+            "RenderPipeline"="UniversalPipeline"
+            "IgnoreDepthPrepass" = "True"
+            "IgnoreDepthTexture" = "True"
         }
+
         Pass
         {
             Name "ParticlePass"
@@ -21,17 +25,16 @@ Shader "Roxy/ParticleShader"
             {
                 "LightMode" = "UniversalForward"
             }
-            ZWrite On
+            ZWrite Off
             ZTest LEqual
 
             HLSLPROGRAM
             #pragma multi_compile_instancing
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 4.5
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Assets/Shader//Noise.hlsl"
+            #include "Assets/Shader/Noise.hlsl"
 
             struct Particle
             {
@@ -50,9 +53,13 @@ Shader "Roxy/ParticleShader"
             float _RandomSizeRange;
 
 
+            // uniform uint _BaseVertexIndex;
+
+
             struct Attributes
             {
                 uint vertexID : SV_VertexID;
+                uint instanceId : SV_InstanceID;
             };
 
             struct Varyings
@@ -70,15 +77,15 @@ Shader "Roxy/ParticleShader"
             {
                 Varyings output;
 
-                uint particleIndex = input.vertexID / 3;
+                uint particleIndex = input.instanceId;
                 uint quadVertexIndex = input.vertexID % 3;
 
                 float3 worldPos = particles[particleIndex].position;
 
                 float2 triangleOffsets[3] = {
-                    float2(- 0.5, - 0.5), // 左下
+                    float2(-0.5, -0.5), // 左下
                     float2(0.0, 0.366025), // 顶点
-                    float2(0.5, - 0.5), // 右下
+                    float2(0.5, -0.5), // 右下
                 };
 
                 float size = _Size;

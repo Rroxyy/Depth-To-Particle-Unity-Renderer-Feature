@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using AkkoParticle;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -126,7 +127,8 @@ public class RTToParticlePositions : MonoBehaviour
                 if (EditorApplication.isPlaying)
                 {
                     //输出到粒子系统
-                    ParticleManager.instance.AddParticle(resultPositions);
+                    ParticleBufferController pbc = ParticleManager2.instance.GetParticleBufferController(ParticleManager2.instance.defaultParticleParameters);
+                    pbc.AddParticles(appendBuffer,actualCount);
                 }
 
                 appendBuffer.Release();

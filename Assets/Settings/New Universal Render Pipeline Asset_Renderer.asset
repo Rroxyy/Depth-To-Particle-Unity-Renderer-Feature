@@ -75,5 +75,5 @@ MonoBehaviour:
   rtToParticlePositions: {fileID: 0}
   layerMask:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 3072
   captureScreenshot: 0

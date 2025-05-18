@@ -2,18 +2,37 @@ Shader "Roxy/ParticleShader2"
 {
     Properties
     {
-        _MainTex("Texture", 2D) = "white" {}
-        _Size("Particle Size", Float) = 1.0
-        [HDR]_Color("Color", Color) = (1, 1, 1, 1)
+        [Header(Size)]
+        _BaseSize("Base Size",Float)=1
+        [Toggle(_USE_SIZE_CURVE)]_UseSizeCurve("Use Size Curve",Float)=0
+        _SizeTex("Size Curve Texture",2D)="white" {}
+
+        [Header(Color)]
+        [HDR]_BaseColor("Base Color", Color) = (1, 1, 1, 1)
+        [Toggle(_USE_COLOR_CURVE_TEX)]_UseColorCurveTex("Use Color Curve Texture",Float)=0
+        _ColorCurveTex("Color Curve Texture",2D)="White"{}
+
+
+        [Header(Mesh Info)]
+        _VerticesTex("Vertices Texture",2D)="White"{}
+        _VerticesLength("Vertices Lenght",Float)=0
+        [Space(5)]
+        _IndicesTex("Indices Texture",2D)="White"{}
+        _TriangleCount("Triangle Count",Float)=0
+
     }
 
     SubShader
     {
         Tags
         {
-            "RenderType" = "Opaque"
-            "RenderPipeline" = "UniversalPipeline"
+            "Queue"="Transparent"
+            "RenderType"="Transparent"
+            "RenderPipeline"="UniversalPipeline"
+            "IgnoreDepthPrepass" = "True"
+            "IgnoreDepthTexture" = "True"
         }
+
         Pass
         {
             Name "ParticlePass"
@@ -21,37 +40,39 @@ Shader "Roxy/ParticleShader2"
             {
                 "LightMode" = "UniversalForward"
             }
-            ZWrite On
+            ZWrite Off
             ZTest LEqual
-
+            Cull Back
             HLSLPROGRAM
-
             #pragma multi_compile_instancing
+            #pragma shader_feature_local_vertex _USE_SIZE_CURVE
+            #pragma shader_feature_local_fragment _USE_COLOR_CURVE_TEX
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 4.5
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Assets/Shader//Noise.hlsl"
+            #include "Assets/Shader/Noise.hlsl"
+            #include "Assets/Shader/Particle.hlsl"
+            
 
-            struct Particle
-            {
-                float3 position;
-                float3 velocity;
-            };
-
-            TEXTURE2D(_MainTex);
-            SAMPLER(sampler_MainTex);
-
-
-            float4 _Color;
+            float _BaseSize;
+            float4 _BaseColor;
             StructuredBuffer<Particle> particles;
-            float _Size;
-            float _EnableRandomSize;
-            float _RandomSizeRange;
+            
+            Texture2D _SizeTex;
+            SamplerState sampler_SizeTex;
 
+            Texture2D _ColorCurveTex;
+            SamplerState sampler_ColorCurveTex;
 
-            // uniform uint _BaseVertexIndex;
+            Texture2D _VerticesTex;
+            SamplerState sampler_VerticesTex;
+
+            Texture2D _IndicesTex;
+            SamplerState sampler_IndicesTex;
+
+            float _VerticesLength;
+            float _TriangleCount;
 
 
             struct Attributes
@@ -63,48 +84,71 @@ Shader "Roxy/ParticleShader2"
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
+                uint enable:TEXCOORD0;
+                float t:TEXCOORD1;
             };
 
-            float GetRandomSize(float sizeMin, float sizeMax, int id)
+            float EvaluateSizeCurve(float t)
             {
-                return random(id, sizeMin, sizeMax);
+                float2 uv = float2(t, 0.5); 
+                float value = _SizeTex.SampleLevel(sampler_SizeTex, uv, 0).x;
+                return value;
             }
+            
+            float3 GetObjectPosFromVertexID(uint vertexID)
+            {
+                // 当前三角形索引
+                uint triID = vertexID / 3;
+
+                float u = (float)(triID + 0.5) / (float)_TriangleCount;
+                float3 indices = _IndicesTex.SampleLevel(sampler_IndicesTex, float2(u, 0.5f), 0).rgb;
+
+                int i0 = (int)indices.x;
+                int i1 = (int)indices.y;
+                int i2 = (int)indices.z;
+
+                int vertIndex = 0;
+                uint remainder = vertexID % 3;
+                if (remainder == 0) vertIndex = i0;
+                else if (remainder == 1) vertIndex = i1;
+                else vertIndex = i2;
+                
+                float vertU = (vertIndex + 0.5) / _VerticesLength;
+                float3 pos = _VerticesTex.SampleLevel(sampler_VerticesTex, float2(vertU, 0.5f), 0).xyz;
+
+                return pos;
+            }
+
 
             Varyings vert(Attributes input)
             {
-               
                 Varyings output;
 
                 uint particleIndex = input.instanceId;
-                uint quadVertexIndex = input.vertexID % 3;
+                Particle particle = particles[particleIndex];
 
-                float3 worldPos = particles[particleIndex].position;
+                output.enable = particle.active;
 
-                float2 triangleOffsets[3] = {
-                    float2(-0.5, -0.5), // 左下
-                    float2(0.0, 0.366025), // 顶点
-                    float2(0.5, -0.5), // 右下
-                };
-
-                float size = _Size;
+                float curveSize = 1.0f;
 
 
-                if (_EnableRandomSize > 0)
-                {
-                    size = GetRandomSize(max(0, size - _RandomSizeRange), size + _RandomSizeRange, particleIndex);
-                }
+                float t = float(particle.als.x) / particle.als.y;
 
-                float2 offset = triangleOffsets[quadVertexIndex] * size;
+                #if _USE_SIZE_CURVE
+                curveSize = EvaluateSizeCurve(t);
+                #endif
+                
 
-                float3 right = normalize(UNITY_MATRIX_I_V[0].xyz);
-                float3 up = normalize(UNITY_MATRIX_I_V[1].xyz);
+                float3 worldPos = particle.position;
+                
+                float3 localPos = GetObjectPosFromVertexID(input.vertexID);
+                float3 offset = localPos * curveSize * _BaseSize;
 
-                float3 offsetWorld = right * offset.x + up * offset.y;
-                float3 finalWorldPos = worldPos + offsetWorld;
+                float3 finalWorldPos = offset + worldPos;
+
 
                 output.positionHCS = TransformWorldToHClip(finalWorldPos);
-                output.uv = triangleOffsets[quadVertexIndex] + 0.5;
+                output.t = t;
 
                 return output;
             }
@@ -112,7 +156,15 @@ Shader "Roxy/ParticleShader2"
 
             half4 frag(Varyings input) : SV_Target
             {
-                return _Color;
+                clip(input.enable < 1 ? -1 : 1);
+
+                #if _USE_COLOR_CURVE_TEX
+                float2 uv=float2(input.t,0.5);
+                half4 color = SAMPLE_TEXTURE2D(_ColorCurveTex,sampler_ColorCurveTex,uv);
+                return color;
+                #endif
+
+                return _BaseColor;
             }
             ENDHLSL
         }

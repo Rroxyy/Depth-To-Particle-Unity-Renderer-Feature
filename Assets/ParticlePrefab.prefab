@@ -45,15 +45,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableParticles: 0
+  particleTyp: 0
   particleSize: 5
-  enableRandomSize: 0
-  randomSizeRange: 1
+  enableRandomSize: 1
+  randomSizeRange: 4
   particleSizeCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0.0008790316
-      value: 0.41916275
+      value: 0.005420685
       inSlope: 0.1046174
       outSlope: 0.1046174
       tangentMode: 0
@@ -81,18 +82,18 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  particleSpeed: 10
+  particleSpeed: 19.9
   randomStartSpeed: 1
-  randomRangeOfSpeed: 3
+  randomRangeOfSpeed: 10
   particleDirection: 1
-  particleLifeTime: 0.5
+  particleLifeTime: 0.4
   enableWind: 1
   windStrength: 5
-  windDirection: {x: 1, y: 0, z: 0}
+  windDirection: {x: 1, y: 0, z: 1}
   gradientColor:
     serializedVersion: 2
-    key0: {r: 1.1124779, g: 1.7983152, b: 1.8317524, a: 1}
-    key1: {r: 0.31391177, g: 0.5823576, b: 2.4347317, a: 1}
+    key0: {r: 0.37242568, g: 0.4239429, b: 2.1532996, a: 1}
+    key1: {r: 1.3982759, g: 2.146478, b: 3.0665643, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -119,7 +120,12 @@ MonoBehaviour:
     m_ColorSpace: -1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  boundSize: 9156
+  boundSize: 11490
+  boundCenter: {x: 0, y: 0, z: 0}
+  randomPisitionRange: 0
+  generateRandomPositionRange: 0.5
+  generateRandomDistanceRange: 10
+  particleFromDir: {x: 0, y: 0, z: 0}
   particleComputeShader: {fileID: 7200000, guid: 36c1b2c705a15cc429da51380c9eeecf, type: 3}
   particleMaterial: {fileID: 2100000, guid: 0ba62a6e8a202844a9f202598885a701, type: 2}
   mesh: {fileID: 4300000, guid: 5617c86edd8ede840a8f6d0f5b481ba3, type: 2}
